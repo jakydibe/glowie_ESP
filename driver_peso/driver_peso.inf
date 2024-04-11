@@ -1,0 +1,62 @@
+;
+; driver_peso.inf
+;
+
+[Version]
+Signature   = "$WINDOWS NT$"
+Class       = System ; TODO: specify appropriate Class
+ClassGuid   = {4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider    = %ManufacturerName%
+CatalogFile = driver_peso.cat
+DriverVer   = ; TODO: set DriverVer in stampinf property pages
+PnpLockdown = 1
+
+[DestinationDirs]
+DefaultDestDir = 13
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+driver_peso.sys = 1,,
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName% = Standard,NT$ARCH$.10.0...16299 ; %13% support introduced in build 16299
+
+[Standard.NT$ARCH$.10.0...16299]
+%driver_peso.DeviceDesc% = driver_peso_Device, Root\driver_peso ; TODO: edit hw-id
+
+[driver_peso_Device.NT]
+CopyFiles = File_Copy
+
+[File_Copy]
+driver_peso.sys
+
+;-------------- Service installation
+[driver_peso_Device.NT.Services]
+AddService = driver_peso,%SPSVCINST_ASSOCSERVICE%, driver_peso_Service_Inst
+
+; -------------- driver_peso driver install sections
+[driver_peso_Service_Inst]
+DisplayName    = %driver_peso.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %13%\driver_peso.sys
+
+[driver_peso_Device.NT.Wdf]
+KmdfService = driver_peso, driver_peso_wdfsect
+
+[driver_peso_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE = 0x00000002
+ManufacturerName = "<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "driver_peso Installation Disk"
+driver_peso.DeviceDesc = "driver_peso Device"
+driver_peso.SVCDESC = "driver_peso Service"
