@@ -139,6 +139,7 @@ namespace offsets {
     int m_iHealth = 0x334;
     int m_bDormant = 0xE7;
     int m_ListEntry = 0x3A8;
+    int m_flDetectedByEnemySensorTime = 0x1440;
 }
 
 int main() {
@@ -158,11 +159,27 @@ int main() {
         return 1;
     }
 
+    int radar_hack = 0;
+    int glow_hack = 0;
+
+    std::cout << "Do you want Radar hack? [1/0]\n";
+    std::cin >> radar_hack;
+
+    std::cout << "Do you want glow-hack? [1/0]\n";
+    std::cin >> glow_hack;
+
+    if (radar_hack == 0 && glow_hack == 0) {
+        std::cout << "Sorry you did not select any cheat. exiting.........\n";
+        exit(0);
+    }
+
     if (driver::attach_to_process(driver, pid) == true) {
         std::cout << "Attachment successful.\n";
 
         if (const std::uintptr_t client = get_module_base(pid, L"client.dll"); client != 0) {
             std::cout << "Client found.\n";
+
+            float last_glow = 0;
 
             while (true) {
 
@@ -224,12 +241,26 @@ int main() {
                     //printf("spotted: %d\n", spotted);
                     //void write_memory(HANDLE driver_handle, const std::uintptr_t addr, const T & value) {
 
-                    driver::write_memory<bool>(driver, current_pawn + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
-                    
+
+                    if (radar_hack) {
+                        //radar hack (scrivo il bool in memoria)
+                        driver::write_memory<bool>(driver, current_pawn + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
+                    }
+
+
+                    float last_glow_copy = driver::read_memory<float>(driver, current_pawn + offsets::m_flDetectedByEnemySensorTime);
+
+                    if (!glow_hack && last_glow_copy == 86400) {
+                        driver::write_memory<float>(driver, current_pawn + offsets::m_flDetectedByEnemySensorTime, 0);
+                    }
+                    if (glow_hack) {
+                        //glow hack, scrivo il colore dei nemici
+                        driver::write_memory<float>(driver, current_pawn + offsets::m_flDetectedByEnemySensorTime, 86400);
+                    }
 
 
                 }
-                Sleep(1000);
+                Sleep(200);
 
 
             }
